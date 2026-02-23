@@ -1,6 +1,8 @@
 # My First Django Project
 
-## Этот проект — Учебный полигон
+Этот проект — Учебный полигон
 
-Запуск: python
-```main.py```
+## Запуск:
+```bash
+python main.py
+```

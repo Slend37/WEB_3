@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class='container'>
+    <h1 class='my-4 mx-md-4'>О нас</h1>
+    {% if error %}
+        <div class='alert alert-danger' role="alert">
+            {{ error }}
+        </div>
+    {% else %}
+    <div class="mx-md-4">
+        <p>Добро пожаловать на сайт для обмена книгами!</p>
+        <p>Удобно! Быстро! Просто! Все это только у нас</p>
+        <p>Мы работаем по адресу: г. Москва, ул. Арбатская, 1</p>
+        <p>Приходите или задавайте вопросый онлайн по контактам ниже :)</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -45,38 +45,23 @@
         </div>
 
         <div class="container text-center">
+            
             <div class="row">
+                {% for item in books %}
                 <div class="col">
-                    <div class="card" style="width: 18rem; margin-top: 3rem; margin-bottom: 3rem">
+                    <div class="card" style="height: 30rem; width: 18rem; margin-top: 3rem; margin-bottom: 3rem">
                         <img src="https://placehold.co/300" class="card-img-top" alt="...">
                         <div class="card-body">
-                            <h5 class="card-title">Пробный период</h5>
-                            <p class="card-text">7 дней бесплатно</p>
-                            <a href="#" class="btn btn-success">Попробовать</a>
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text">{{ item.publish_year}}</p>
+                            <h6 class="card-title">{{ item.author }}</h6>
+                            <a href="#" class="btn btn-success">Подробнее</a>
                         </div>
-                    </div>
+                    </div>      
                 </div>
-                <div class="col">
-                    <div class="card" style="width: 18rem; margin-top: 3rem; margin-bottom: 3rem">
-                        <img src="https://placehold.co/300" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5 class="card-title">Абонемент на месяц</h5>
-                            <p class="card-text">Оплата раз в месяц</p>
-                            <a href="#" class="btn btn-secondary">Купить</a>
-                        </div>
-                    </div>
-                </div>
-                            <div class="col">
-                    <div class="card" style="width: 18rem; margin-top: 3rem; margin-bottom: 3rem">
-                        <img src="https://placehold.co/300" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5 class="card-title">Абонемент на год</h5>
-                            <p class="card-text">Оплата раз в год</p>
-                            <a href="#" class="btn btn-secondary">Купить</a>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
+            
         </div>
     </main>
     {% endblock %}

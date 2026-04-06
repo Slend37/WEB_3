@@ -1,0 +1,4 @@
+-r requirements.txt
+
+django-stubs[compatible-mypy]==6.0.1
+ipython==9.12.0

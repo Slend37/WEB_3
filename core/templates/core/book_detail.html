@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ book.name }} | Детали книги{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card mt-5 mb-5">
+                <div class="card-header">
+                    <h2 class="mb-0">{{ book.name }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if book.author %}
+                    <div class="mb-3">
+                        <h5 class="text-muted">Автор:</h5>
+                        <p class="lead">{{ book.author.name }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <h5 class="text-muted">Год издания:</h5>
+                        <p class="lead">{{ book.publish_year }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5 class="text-muted">Дата добавления:</h5>
+                        <p class="lead">{{ book.logtime|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-secondary">← Назад к списку</a>
+                        <a href="#" class="btn btn-success float-end">Предложить обмен</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

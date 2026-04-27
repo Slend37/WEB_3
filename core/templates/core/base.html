@@ -55,7 +55,7 @@
                             <h5 class="card-title">{{ item.name }}</h5>
                             <p class="card-text">{{ item.publish_year}}</p>
                             <h6 class="card-title">{{ item.author }}</h6>
-                            <a href="#" class="btn btn-success">Подробнее</a>
+                            <a href="{% url 'book_detail' pk=item.pk %}" class="btn btn-success">Подробнее</a>
                         </div>
                     </div>      
                 </div>

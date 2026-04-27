@@ -32,7 +32,10 @@
                     
                     <div class="mt-4">
                         <a href="{% url 'home' %}" class="btn btn-secondary">← Назад к списку</a>
-                        <a href="#" class="btn btn-success float-end">Предложить обмен</a>
+                        <div class="float-end">
+                            <a href="{% url 'book_edit' pk=book.pk %}" class="btn btn-warning me-2">✏ Редактировать</a>
+                            <a href="#" class="btn btn-success">Предложить обмен</a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
-from core.models import Book
-from core.forms import FeedbackForm
+from core.models import Book, Author
+from core.forms import FeedbackForm, BookForm
 
 
 def index(request):
@@ -41,3 +41,40 @@ def contact(request):
         'title': 'Контакты',
     }
     return render(request, 'core/contact.html', context)
+
+def book_create(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            book = form.save()
+            return redirect('book_detail', pk=book.pk)
+    else:
+        form = BookForm()
+    
+    context = {
+        'form': form,
+        'title': 'Добавление новой книги',
+        'button_text': 'Создать книгу',
+        'action': 'create'
+    }
+    return render(request, 'core/book_form.html', context)
+
+def book_edit(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    
+    if request.method == 'POST':
+        form = BookForm(request.POST, instance=book)
+        if form.is_valid():
+            book = form.save()
+            return redirect('book_detail', pk=book.pk)
+    else:
+        form = BookForm(instance=book)
+    
+    context = {
+        'form': form,
+        'book': book,
+        'title': f'Редактирование книги: {book.name}',
+        'button_text': 'Сохранить изменения',
+        'action': 'edit'
+    }
+    return render(request, 'core/book_form.html', context)

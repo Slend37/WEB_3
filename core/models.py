@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Author(models.Model):
@@ -21,6 +22,10 @@ class Book(models.Model):
     author = models.ForeignKey(
         Author, on_delete=models.CASCADE, null=True, related_name="books"
     )
+
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, null = True, related_name="books"
+        )
 
     class Meta:
         verbose_name = "Книга"

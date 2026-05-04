@@ -11,12 +11,13 @@
                     <h2 class="mb-0">{{ book.name }}</h2>
                 </div>
                 <div class="card-body">
-                    {% if book.author %}
                     <div class="mb-3">
                         <h5 class="text-muted">Автор:</h5>
                         <p class="lead">{{ book.author.name }}</p>
+                        {% if book.user %}
+                            <small class="text-muted">Добавил пользователь: {{ book.user.username }}</small>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     
                     <div class="mb-3">
                         <h5 class="text-muted">Год издания:</h5>
@@ -33,7 +34,9 @@
                     <div class="mt-4">
                         <a href="{% url 'home' %}" class="btn btn-secondary">← Назад к списку</a>
                         <div class="float-end">
-                            <a href="{% url 'book_edit' pk=book.pk %}" class="btn btn-warning me-2">✏ Редактировать</a>
+                            {% if user.is_authenticated and book.user == user %}
+                                <a href="{% url 'book_edit' pk=book.pk %}" class="btn btn-warning me-2">✏ Редактировать</a>
+                            {% endif %}
                             <a href="#" class="btn btn-success">Предложить обмен</a>
                         </div>
                     </div>

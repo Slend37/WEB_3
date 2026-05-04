@@ -2,9 +2,12 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from core.models import Book, Author
 from core.forms import FeedbackForm, BookForm
+from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest, HttpResponse
 
-
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     context = {
         'title': 'Сервис обмена книгами',
         'welcome_text': 'Удобный и простой сайт для обмена книгами онлайн.',
@@ -12,17 +15,17 @@ def index(request):
     }
     return render(request, 'core/index.html', context)
 
-def about(request):
+def about(request: HttpRequest) -> HttpResponse:
     return render(request, 'core/about.html')
 
-def book_detail(request, pk):
+def book_detail(request: HttpRequest, pk) -> HttpResponse:
     book = get_object_or_404(Book, pk=pk)
     context = {
         'book': book,
     }
     return render(request, 'core/book_detail.html', context)
 
-def contact(request):
+def contact(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -42,12 +45,23 @@ def contact(request):
     }
     return render(request, 'core/contact.html', context)
 
+@login_required
 def book_create(request):
     if request.method == 'POST':
         form = BookForm(request.POST)
         if form.is_valid():
-            book = form.save()
+            book = form.save(commit=False)
+            book.owner = request.user
+            
+            author_name = request.user.username
+            author, created = Author.objects.get_or_create(name=author_name)
+            book.author = author
+            
+            book.save()
+            messages.success(request, f'Книга "{book.name}" успешно создана!')
             return redirect('book_detail', pk=book.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         form = BookForm()
     
@@ -59,14 +73,22 @@ def book_create(request):
     }
     return render(request, 'core/book_form.html', context)
 
-def book_edit(request, pk):
+@login_required
+def book_edit(request: HttpRequest, pk) -> HttpResponse:
     book = get_object_or_404(Book, pk=pk)
+    
+    if book.user != request.user:
+        messages.error(request, 'Вы можете редактировать только свои книги!')
+        return redirect('book_detail', pk=book.pk)
     
     if request.method == 'POST':
         form = BookForm(request.POST, instance=book)
         if form.is_valid():
             book = form.save()
+            messages.success(request, f'Книга "{book.name}" успешно обновлена!')
             return redirect('book_detail', pk=book.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         form = BookForm(instance=book)
     
@@ -78,3 +100,16 @@ def book_edit(request, pk):
         'action': 'edit'
     }
     return render(request, 'core/book_form.html', context)
+
+def register(request: HttpRequest) -> HttpResponse:
+    error = "Пожалуйста, исправьте ошибки в форме"
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('login'))
+        else:
+            return render(request, "registration/register.html", {"form": form, "error": error})
+    else:
+        form = UserCreationForm()
+        return render(request, "registration/register.html", {"form": form})

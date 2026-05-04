@@ -37,6 +37,19 @@
         </nav>
     </header>
     <main>
+        <div class="container">
+            {% if request.user.is_authenticated %}
+                <p>
+                    <div class="mx-2">Привет, {{ user.username }}</div>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class='btn btn-link' formaction="{% url 'logout' %}">Выйти</button>
+                    </form> 
+                </p>
+            {% else %}
+                <a href="{% url 'login' %}" class='btn btn-link'>Войти</a>
+                <a href="{% url 'register' %}" class='btn btn-link'>Регистрация</a>
+            {% endif %}
         {% block content %}
         {% endblock %}
     </main>

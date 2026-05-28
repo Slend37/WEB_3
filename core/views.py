@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
-from core.models import Book, Author
-from core.forms import FeedbackForm, BookForm
+from core.models import Book, Author, Comment
+from core.forms import CommentForm, FeedbackForm, BookForm
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -22,8 +22,30 @@ def book_detail(request: HttpRequest, pk) -> HttpResponse:
     book = get_object_or_404(Book, pk=pk)
     context = {
         'book': book,
+        'form': CommentForm(),
     }
     return render(request, 'core/book_detail.html', context)
+
+def add_comment(request: HttpRequest, book_id: int) -> HttpResponse:
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            Comment.objects.create(
+                book = book,
+                author=request.user,
+                text=form.cleaned_data["text"],
+            )
+            messages.success(request, "Комментарий успешно добавлен")
+            return redirect(reverse("book_detail", args=[book_id]))
+        else:
+            messages.error(request, "Пожалуйста, исправьте ошибки в форме")
+            return redirect(reverse("book_detail", args=[book_id]))
+    else:
+        return HttpResponse("Метод не поддерживается", status=405)
+
+
 
 def contact(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':

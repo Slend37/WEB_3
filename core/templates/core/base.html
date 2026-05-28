@@ -29,7 +29,7 @@
                             <a class="nav-link active" href="{% url 'contact' %}">Контакты</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="{% url 'home' %}">Войти</a>
+                            <a class="nav-link active" href="{% url 'login' %}">Войти</a>
                         </li>
                     </ul>
                 </div>
@@ -50,6 +50,20 @@
                 <a href="{% url 'login' %}" class='btn btn-link'>Войти</a>
                 <a href="{% url 'register' %}" class='btn btn-link'>Регистрация</a>
             {% endif %}
+            <hr/>
+            {% if messages %}
+                <div class="row-my-2">
+                    <div class="col">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
         {% block content %}
         {% endblock %}
     </main>

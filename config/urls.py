@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from core.views import index, about, book_detail, contact, book_create, book_edit, register
+from core.views import index, about, book_detail, contact, book_create, book_edit, register, add_comment
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +28,5 @@ urlpatterns = [
     path('book/<int:pk>/edit/', book_edit, name='book_edit'),
     path('register/', register, name='register'),
     path('accounts/', include('django.contrib.auth.urls')),
-
+    path('book/<int:book_id>/add-comment/', add_comment, name="add_comment"),
 ]

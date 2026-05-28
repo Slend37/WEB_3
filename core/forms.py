@@ -1,5 +1,5 @@
 from django import forms
-from core.models import Book, Author
+from core.models import Book, Author, Comment
 
 
 class FeedbackForm(forms.Form):
@@ -62,3 +62,11 @@ class BookForm(forms.ModelForm):
         if len(name) < 2:
             raise forms.ValidationError('Название книги должно содержать минимум 2 символа')
         return name
+    
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["text",]
+        widgets = {
+            "text": forms.Textarea(attrs={"class": "form-control", "rows": 3})
+        }

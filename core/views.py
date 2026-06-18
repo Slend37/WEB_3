@@ -1,50 +1,18 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views import View
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from core.models import Book, Author, Comment
 from core.forms import CommentForm, FeedbackForm, BookForm
-from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
 
-def index(request: HttpRequest) -> HttpResponse:
-    context = {
-        'title': 'Сервис обмена книгами',
-        'welcome_text': 'Удобный и простой сайт для обмена книгами онлайн.',
-        'books': Book.objects.order_by("-name").all(),
-    }
-    return render(request, 'core/index.html', context)
 
 def about(request: HttpRequest) -> HttpResponse:
     return render(request, 'core/about.html')
-
-def book_detail(request: HttpRequest, pk) -> HttpResponse:
-    book = get_object_or_404(Book, pk=pk)
-    context = {
-        'book': book,
-        'form': CommentForm(),
-    }
-    return render(request, 'core/book_detail.html', context)
-
-def add_comment(request: HttpRequest, book_id: int) -> HttpResponse:
-    book = get_object_or_404(Book, id=book_id)
-
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            Comment.objects.create(
-                book = book,
-                author=request.user,
-                text=form.cleaned_data["text"],
-            )
-            messages.success(request, "Комментарий успешно добавлен")
-            return redirect(reverse("book_detail", args=[book_id]))
-        else:
-            messages.error(request, "Пожалуйста, исправьте ошибки в форме")
-            return redirect(reverse("book_detail", args=[book_id]))
-    else:
-        return HttpResponse("Метод не поддерживается", status=405)
-
 
 
 def contact(request: HttpRequest) -> HttpResponse:
@@ -67,61 +35,6 @@ def contact(request: HttpRequest) -> HttpResponse:
     }
     return render(request, 'core/contact.html', context)
 
-@login_required
-def book_create(request):
-    if request.method == 'POST':
-        form = BookForm(request.POST)
-        if form.is_valid():
-            book = form.save(commit=False)
-            book.owner = request.user
-            
-            author_name = request.user.username
-            author, created = Author.objects.get_or_create(name=author_name)
-            book.author = author
-            
-            book.save()
-            messages.success(request, f'Книга "{book.name}" успешно создана!')
-            return redirect('book_detail', pk=book.pk)
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
-    else:
-        form = BookForm()
-    
-    context = {
-        'form': form,
-        'title': 'Добавление новой книги',
-        'button_text': 'Создать книгу',
-        'action': 'create'
-    }
-    return render(request, 'core/book_form.html', context)
-
-@login_required
-def book_edit(request: HttpRequest, pk) -> HttpResponse:
-    book = get_object_or_404(Book, pk=pk)
-    
-    if book.user != request.user:
-        messages.error(request, 'Вы можете редактировать только свои книги!')
-        return redirect('book_detail', pk=book.pk)
-    
-    if request.method == 'POST':
-        form = BookForm(request.POST, instance=book)
-        if form.is_valid():
-            book = form.save()
-            messages.success(request, f'Книга "{book.name}" успешно обновлена!')
-            return redirect('book_detail', pk=book.pk)
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
-    else:
-        form = BookForm(instance=book)
-    
-    context = {
-        'form': form,
-        'book': book,
-        'title': f'Редактирование книги: {book.name}',
-        'button_text': 'Сохранить изменения',
-        'action': 'edit'
-    }
-    return render(request, 'core/book_form.html', context)
 
 def register(request: HttpRequest) -> HttpResponse:
     error = "Пожалуйста, исправьте ошибки в форме"
@@ -135,3 +48,109 @@ def register(request: HttpRequest) -> HttpResponse:
     else:
         form = UserCreationForm()
         return render(request, "registration/register.html", {"form": form})
+
+
+class BookListView(ListView):
+    model = Book
+    template_name = 'core/index.html'
+    context_object_name = 'books'
+    ordering = ['-name']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Сервис обмена книгами'
+        context['welcome_text'] = 'Удобный и простой сайт для обмена книгами онлайн.'
+        return context
+
+
+class BookDetailView(DetailView):
+    model = Book
+    template_name = 'core/book_detail.html'
+    context_object_name = 'book'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        return context
+
+
+class BookCreateView(LoginRequiredMixin, CreateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'core/book_form.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('book_detail', kwargs={'pk': self.object.pk})
+    
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        
+        author_name = self.request.user.username
+        author, created = Author.objects.get_or_create(name=author_name)
+        form.instance.author = author
+        
+        messages.success(self.request, f'Книга "{form.instance.name}" успешно создана!')
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавление новой книги'
+        context['button_text'] = 'Создать книгу'
+        context['action'] = 'create'
+        return context
+
+
+class BookUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'core/book_form.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('book_detail', kwargs={'pk': self.object.pk})
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Книга "{form.instance.name}" успешно обновлена!')
+        return super().form_valid(form)
+    
+    def test_func(self):
+        book = self.get_object()
+        return self.request.user == book.owner
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование книги: {self.object.name}'
+        context['button_text'] = 'Сохранить изменения'
+        context['action'] = 'edit'
+        return context
+
+
+class BookDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Book
+    template_name = 'core/book_confirm_delete.html'
+    success_url = reverse_lazy('home')
+    
+    def test_func(self):
+        book = self.get_object()
+        return self.request.user == book.owner
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Книга успешно удалена!')
+        return super().delete(request, *args, **kwargs)
+
+
+class AddCommentView(LoginRequiredMixin, View):
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+        form = CommentForm(request.POST)
+        
+        if form.is_valid():
+            Comment.objects.create(
+                book=book,
+                author=request.user,
+                text=form.cleaned_data["text"],
+            )
+            messages.success(request, "Комментарий успешно добавлен")
+        else:
+            messages.error(request, "Пожалуйста, исправьте ошибки в форме")
+        
+        return HttpResponseRedirect(reverse_lazy('book_detail', kwargs={'pk': book_id}))

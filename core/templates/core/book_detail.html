@@ -34,8 +34,9 @@
                     <div class="mt-4">
                         <a href="{% url 'home' %}" class="btn btn-secondary">← Назад к списку</a>
                         <div class="float-end">
-                            {% if user.is_authenticated and book.user == user %}
+                            {% if user.is_authenticated and book.owner == user %}
                                 <a href="{% url 'book_edit' pk=book.pk %}" class="btn btn-warning me-2">✏ Редактировать</a>
+                                <a href="{% url 'book_delete' pk=book.pk %}" class="btn btn-warning me-2">✏ Удалить</a>
                             {% endif %}
                             <a href="#" class="btn btn-success">Предложить обмен</a>
                         </div>

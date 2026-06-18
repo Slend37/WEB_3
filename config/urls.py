@@ -16,17 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from core.views import index, about, book_detail, contact, book_create, book_edit, register, add_comment
+from core.views import about, contact, register
+from core.views import BookCreateView, BookDeleteView, BookDetailView, BookListView, AddCommentView, BookUpdateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='home'),
+    path('', BookListView.as_view(), name='home'),
     path('about/', about, name='about'),
-    path('book/<int:pk>/', book_detail, name='book_detail'),
+    path('book/<int:pk>/', BookDetailView.as_view(), name='book_detail'),
     path('contact/', contact, name='contact'),
-    path('book/create/', book_create, name='book_create'),
-    path('book/<int:pk>/edit/', book_edit, name='book_edit'),
+    path('book/create/', BookCreateView.as_view(), name='book_create'),
+    path('book/<int:pk>/edit/', BookUpdateView.as_view(), name='book_edit'),
+    path('book/<int:pk>/delete/', BookDeleteView.as_view(), name='book_delete'),
     path('register/', register, name='register'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('book/<int:book_id>/add-comment/', add_comment, name="add_comment"),
+    path('book/<int:book_id>/add-comment/', AddCommentView.as_view(), name="add_comment"),
 ]
